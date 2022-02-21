@@ -2,28 +2,26 @@ import os
 import subprocess
 import time
 import threading
-import multiprocessing
-import runthread
 
 class runThread:
     
-    def __init__(self,runfileName,folderName):
+    def __init__(self, runfileName, folderName, homeFolder):
         this.runfileName = runfileName
         this.folderName = folderName
+        this.homeFolder = homeFolder
 
-    def runfile(self, runfileName, folderName):
-        folderCheck(homeFolder)
-        os.chdir(folderName)
-        subprocess.run(["python", runfileName])
+    def runfile(self):
+        folderCheck(this.homeFolder)
+        os.chdir(this.folderName)
+        subprocess.run(["python", this.runfileName])
         os.chdir("..")
 
-    def startrunthread(self, runfileName, folderName):
-        runthread = threading.Thread(target=runfile, args=(runfileName,folderName))
+    def startrunthread(self):
+        runthread = threading.Thread(target=runfile, args=(this.runfileName,this.folderName))
         runthread.start()
 
-
 def updater(): 
-    runthreadob = runThread(runfileName, folderName)
+    runthreadob = runThread(runfileName, folderName, homeFolder)
     runthreadob.startrunthread()
     while True:
         folderCheck(homeFolder)
@@ -63,9 +61,6 @@ def folderCheck(homeFolder):
 def uptodateCheck(folderName):
     folderCheck(homeFolder)
     lsoutput = os.popen("ls").read().split("\n")
-    print("")
-    print(lsoutput)
-    print("")
     os.chdir(lsoutput[3])
     subprocess.run(["git", "fetch", "origin"])
     output = os.popen("git status").read()
