@@ -11,7 +11,7 @@ class runThread:
         self.runfileName = runfileName
         self.folderName = folderName
         self.homeFolder = homeFolder
-        self.runthread = threading.Thread(target=self.runfile,daemon = True)
+        self.runthread = threading.Thread(target=self.runfile,daemon = False)
         self.p = None
       
     def runfile(self):
@@ -100,6 +100,9 @@ homeFolder = os.getcwd()
 
 subprocess.run(["touch", "output.txt"])
 subprocess.run(["git", "clone", githuburl])
+
+testingFolderindex = lsoutput = os.popen("ls").read().split("\n").index(folderName)
+print(testingFolderindex)
 
 updaterthread = threading.Thread(target=updater)
 
