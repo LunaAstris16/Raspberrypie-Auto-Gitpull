@@ -3,22 +3,28 @@ import subprocess
 import time
 import threading
 
+#builds an object for the run thread 
+#Allows for expantion later 
 class runThread:
     
     def __init__(self, runfileName, folderName, homeFolder):
-        this.runfileName = runfileName
-        this.folderName = folderName
-        this.homeFolder = homeFolder
-
+        self.runfileName = runfileName
+        self.folderName = folderName
+        self.homeFolder = homeFolder
+        self.runthread = threading.Thread(target=self.runfile,daemon = True)
+        self.p = None
+      
     def runfile(self):
-        folderCheck(this.homeFolder)
-        os.chdir(this.folderName)
-        subprocess.run(["python", this.runfileName])
+        folderCheck(self.homeFolder)
+        os.chdir(self.folderName)
+        self.p = subprocess.Popen(["python", self.runfileName])
         os.chdir("..")
 
     def startrunthread(self):
-        runthread = threading.Thread(target=runfile, args=(this.runfileName,this.folderName))
-        runthread.start()
+        self.runthread.start()
+
+    def stopprocess(self):
+        self.p.terminate()
 
 def updater(): 
     runthreadob = runThread(runfileName, folderName, homeFolder)
@@ -27,21 +33,26 @@ def updater():
         folderCheck(homeFolder)
         subprocess.run(["touch", "output.txt"])
         lsoutput = os.popen("ls").read().split("\n")
-        os.chdir(lsoutput[3])
+        print(lsoutput)
+        os.chdir(lsoutput[5])
+        #The line below this is responsible for seeing if the git is up to date and pulls the latest version if it does
         changedbranch = uptodateCheck(folderName)
         if changedbranch == True:
             print("Your Repository was updated Auto run Started")
-            del runthreadob
+            runthreadob.stopprocess()
+            runthreadob.runfile()
         else:
             print("New Check Say's Your repositor is up to date")
             time.sleep(10)
             print("new line")
 
+#Finds the folder name of the clone folder
 def foldernamefinder(githuburl):
     spliturl = githuburl.split("/")
     spliturl = spliturl.pop(len(spliturl) - 1)
     return spliturl.split(".")[0]
 
+#Checks the folder to make sure its in the home Dirc
 def folderCheck(homeFolder):
     currentFolder = os.getcwd()
     if homeFolder == currentFolder:
@@ -58,10 +69,11 @@ def folderCheck(homeFolder):
                 if homeFolder == currentFolder:
                     return True
 
+#this is what updates the file
 def uptodateCheck(folderName):
     folderCheck(homeFolder)
     lsoutput = os.popen("ls").read().split("\n")
-    os.chdir(lsoutput[3])
+    os.chdir(lsoutput[5])
     subprocess.run(["git", "fetch", "origin"])
     output = os.popen("git status").read()
     os.chdir("..")
@@ -70,8 +82,9 @@ def uptodateCheck(folderName):
     githubout.close()
     listtext = [(line.strip()) for line in open("output.txt", "r")]
     gitstatus = listtext[1].split(" ")
+    #Returns wether the files where updated or not
     if gitstatus[3] == "behind":
-        os.chdir(lsoutput[3])
+        os.chdir(lsoutput[5])
         subprocess.run(["git", "pull"])
         os.chdir("..")
         os.remove("output.txt")
