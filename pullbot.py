@@ -26,7 +26,7 @@ class runThread:
     def stopprocess(self):
         self.p.terminate()
 
-def updater(): 
+def updater(runfileName, folderName, homeFolder, testingFolderindex): 
     runthreadob = runThread(runfileName, folderName, homeFolder)
     runthreadob.startrunthread()
     while True:
@@ -36,13 +36,13 @@ def updater():
         print(lsoutput)
         os.chdir(lsoutput[testingFolderindex])
         #The line below this is responsible for seeing if the git is up to date and pulls the latest version if it does
-        changedbranch = uptodateCheck(folderName)
-        if changedbranch == True:
+        changedbranch = uptodateCheck(folderName, testingFolderindex, homeFolder)
+        if changedbranch:
             print("Your Repository was updated Auto run Started")
             runthreadob.stopprocess()
             runthreadob.runfile()
         else:
-            print("New Check Say's Your repositor is up to date")
+            print("New Check Say's Your repository is up to date")
             time.sleep(10)
             print("new line")
 
@@ -57,20 +57,18 @@ def folderCheck(homeFolder):
     currentFolder = os.getcwd()
     if homeFolder == currentFolder:
         return True
-    else:
-        lsoutput = os.popen("ls").read().split("\n")
-        for i in range(len(lsoutput)):
-            if lsoutput[i] == homeFolder:
-                os.chdir(homeFolder)
-                return True 
-            else:
-                os.chdir("..")
-                currentFolder = os.getcwd()
-                if homeFolder == currentFolder:
-                    return True
+    lsoutput = os.popen("ls").read().split("\n")
+    for i in range(len(lsoutput)):
+        if lsoutput[i] == homeFolder:
+            os.chdir(homeFolder)
+            return True 
+        os.chdir("..")
+        currentFolder = os.getcwd()
+        if homeFolder == currentFolder:
+            return True
 
 #this is what updates the file
-def uptodateCheck(folderName):
+def uptodateCheck(folderName, testingFolderindex, homeFolder):
     folderCheck(homeFolder)
     lsoutput = os.popen("ls").read().split("\n")
     os.chdir(lsoutput[testingFolderindex])
@@ -82,28 +80,31 @@ def uptodateCheck(folderName):
     githubout.close()
     listtext = [(line.strip()) for line in open("output.txt", "r")]
     gitstatus = listtext[1].split(" ")
-    #Returns wether the files where updated or not
+    #Returns whether the files where updated or not
     if gitstatus[3] == "behind":
         os.chdir(lsoutput[testingFolderindex])
         subprocess.run(["git", "pull"])
         os.chdir("..")
         os.remove("output.txt")
         return True 
-    else:
-        return False 
-        os.remove("output.txt")
+    os.remove("output.txt")
+    return False
 
-githuburl = "https://github.com/LunaAstris16/RasberrypyPythonwebsite.git"
-folderName = foldernamefinder(githuburl)
-runfileName = input("What is the name of the file that you want to run: ")
-homeFolder = os.getcwd()
+def main():
+    githuburl = "https://github.com/LunaAstris16/RasberrypyPythonwebsite.git"
+    folderName = foldernamefinder(githuburl)
+    runfileName = input("What is the name of the file that you want to run: ")
+    homeFolder = os.getcwd()
 
-subprocess.run(["touch", "output.txt"])
-subprocess.run(["git", "clone", githuburl])
+    subprocess.run(["touch", "output.txt"])
+    subprocess.run(["git", "clone", githuburl])
 
-testingFolderindex = lsoutput = os.popen("ls").read().split("\n").index(folderName)
-print(testingFolderindex)
+    testingFolderindex = os.popen("ls").read().split("\n").index(folderName)
+    print(testingFolderindex)
 
-updaterthread = threading.Thread(target=updater)
+    updaterthread = threading.Thread(target=updater(runfileName, folderName, homeFolder, testingFolderindex))
 
-updaterthread.start()
+    updaterthread.start()
+
+if __name__ == "__main__":
+    main()
