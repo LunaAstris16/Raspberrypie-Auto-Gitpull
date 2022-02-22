@@ -34,7 +34,7 @@ def updater():
         subprocess.run(["touch", "output.txt"])
         lsoutput = os.popen("ls").read().split("\n")
         print(lsoutput)
-        os.chdir(lsoutput[5])
+        os.chdir(lsoutput[testingFolderindex])
         #The line below this is responsible for seeing if the git is up to date and pulls the latest version if it does
         changedbranch = uptodateCheck(folderName)
         if changedbranch == True:
@@ -73,7 +73,7 @@ def folderCheck(homeFolder):
 def uptodateCheck(folderName):
     folderCheck(homeFolder)
     lsoutput = os.popen("ls").read().split("\n")
-    os.chdir(lsoutput[5])
+    os.chdir(lsoutput[testingFolderindex])
     subprocess.run(["git", "fetch", "origin"])
     output = os.popen("git status").read()
     os.chdir("..")
@@ -84,7 +84,7 @@ def uptodateCheck(folderName):
     gitstatus = listtext[1].split(" ")
     #Returns wether the files where updated or not
     if gitstatus[3] == "behind":
-        os.chdir(lsoutput[5])
+        os.chdir(lsoutput[testingFolderindex])
         subprocess.run(["git", "pull"])
         os.chdir("..")
         os.remove("output.txt")
@@ -93,7 +93,7 @@ def uptodateCheck(folderName):
         return False 
         os.remove("output.txt")
 
-githuburl = "https://github.com/LunaAstris16/testing.git"
+githuburl = "https://github.com/LunaAstris16/RasberrypyPythonwebsite.git"
 folderName = foldernamefinder(githuburl)
 runfileName = input("What is the name of the file that you want to run: ")
 homeFolder = os.getcwd()
